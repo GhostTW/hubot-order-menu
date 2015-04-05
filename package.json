@@ -1,37 +1,30 @@
 {
   "name": "hubot-order-menu",
   "description": "Make an order for easyily record and calculate total money needed.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": "Ghost Yang <ghosttw88@hotmail.com>",
   "license": "MIT",
-
   "keywords": [
     "hubot",
     "hubot-scripts"
   ],
-
   "repository": {
     "type": "git",
     "url": "https://github.com/GhostTW/hubot-order-menu.git"
   },
-
   "bugs": {
     "url": "https://github.com/GhostTW/hubot-order-menu/issues"
   },
-
   "dependencies": {
     "coffee-script": "~1.6"
   },
-
   "devDependencies": {
     "mocha": "*",
     "chai": "*",
     "sinon-chai": "*",
     "sinon": "*"
   },
-
   "main": "index.coffee",
-
   "scripts": {
     "test": "script/test"
   }

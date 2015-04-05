@@ -26,7 +26,7 @@ module.exports = (robot) ->
 			{@name, @userId, @date, @food, @note, @money} = options
 
 		toString: () ->
-			"#{@name} - #{@food} #{@note} $#{@money}}"
+			"#{@name} - #{@food} #{@note} $#{@money}"
 
 	robot.brain.data['orders'] = []
 

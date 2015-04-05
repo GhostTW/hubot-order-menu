@@ -12,4 +12,3 @@ Make an order for easyily record and calculate total money needed.
 3. hubot order my - show your order
 4. hubot order all - show all orders and calculate total money needed.
 5. hubot order reset - reset all orders
-

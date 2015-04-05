@@ -1,8 +1,8 @@
 {
-  "name": "hubot-example",
-  "description": "An example script package for Hubot",
+  "name": "hubot-order-menu",
+  "description": "Make an order for easyily record and calculate total money needed.",
   "version": "1.0.0",
-  "author": "Tom Bell <tomb@tomb.io>",
+  "author": "Ghost Yang <ghosttw88@hotmail.com>",
   "license": "MIT",
 
   "keywords": [
@@ -12,11 +12,11 @@
 
   "repository": {
     "type": "git",
-    "url": "git://github.com/hubot-scripts/hubot-example.git"
+    "url": "https://github.com/GhostTW/hubot-order-menu.git"
   },
 
   "bugs": {
-    "url": "https://github.com/hubot-scripts/hubot-example/issues"
+    "url": "https://github.com/GhostTW/hubot-order-menu/issues"
   },
 
   "dependencies": {

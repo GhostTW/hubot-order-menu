@@ -5,14 +5,15 @@
 #   
 #
 # Configuration:
-#
+#	HUBOT_ORDER_MENU_STORE_INFO=[name1,phone1,Http:\\link1;name2,phone2,Http:\\link2]
 #
 # Commands:
-#   hubot order <food> <note> $<money> - make an order
-#   hubot order <food> <note> $<money> for @someone - make an order for someone
-#   hubot order my - show your order
+#	hubot order stores - show all store info.
+#   hubot order <food> <note> $<money> - make an order.
+#   hubot order <food> <note> $<money> for @someone - make an order for someone.
+#   hubot order my - show your order.
 #   hubot order all - show all orders and calculate total money needed.
-#	hubot order reset - reset all orders
+#	hubot order reset - reset all orders.
 #
 # Author:
 #   Ghost.Yang
@@ -28,7 +29,30 @@ module.exports = (robot) ->
 		toString: () ->
 			"#{@name} - #{@food} #{@note} $#{@money}"
 
+	class Store
+		constructor: (options) -> 
+			{@name, @phone, @link} = options
+
+		toString: () ->
+			"#{@name} #{@phone} - #{@link}"
+
+	unless process.env.HUBOT_ORDER_MENU_STORE_INFO?
+		robot.logger.warning 'The HUBOT_ORDER_MENU_STORE_INFO environment variable not set'
+
+	Stores = []
+	if process.env.HUBOT_ORDER_MENU_STORE_INFO?
+		rawStoreInfos = process.env.HUBOT_ORDER_MENU_STORE_INFO.split ';'
+		for rawStoreInfo in rawStoreInfos
+			robot.logger.debug rawStoreInfo
+			storeInfos = rawStoreInfo.split ','
+			robot.logger.debug storeInfos
+			Stores.push (new Store name:storeInfos[0], phone:storeInfos[1], link:storeInfos[2])
+
 	robot.brain.data['orders'] = []
+
+	robot.respond /order stores/i, (msg) ->
+		msg.reply 'The HUBOT_ORDER_MENU_STORE_INFO environment variable not set' unless Stores.length
+		msg.reply store for store in Stores
 
 	robot.respond /order\s+(\S*)\s+((\S*\s+)+)?\$(\S*)(\s+for\s+@?(\S*))?/i, (msg) ->
 		#robot.logger.debug Util.inspect(msg)

@@ -27,7 +27,7 @@ module.exports = (robot) ->
 			{@name, @userId, @date, @food, @note, @money} = options
 
 		toString: () ->
-			"#{@name} - #{@food} #{@note} $#{@money}"
+			GetReplyMsg @
 
 	class Store
 		constructor: (options) -> 
@@ -79,10 +79,7 @@ module.exports = (robot) ->
 
 		robot.brain.data.orders.push order
 
-		if(note?)
-			msg.reply "You order #{food} #{note} $#{money} for <@#{userId}|#{user}>"
-		else
-			msg.reply "You order #{food} $#{money} for <@#{userId}|#{user}>"
+		msg.reply GetReplyMsg order
 
 	robot.respond /order my/i, (msg) ->
 		date_current = new Date()
@@ -112,3 +109,9 @@ module.exports = (robot) ->
 		regexPattern = /order .* for \<@?(\S*)\>/i
 		matches = text.match regexPattern
 		matches[1]
+
+	GetReplyMsg = (order) ->
+		if(order.note?)
+			"You order #{order.food} #{order.note} $#{order.money} for <@#{order.userId}|#{order.user}>"
+		else
+			"You order #{order.food} $#{order.money} for <@#{order.userId}|#{order.user}>"

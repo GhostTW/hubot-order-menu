@@ -9,11 +9,11 @@
 #
 # Commands:
 #	hubot order stores - show all store info.
-#   hubot order <food> <note> $<money> - make an order.
-#   hubot order <food> <note> $<money> for @someone - make an order for someone.
+#   hubot order <food> (<note> )$<money> - make an order.
+#   hubot order <food> (<note> )$<money> for @someone - make an order for someone.
 #   hubot order my - show your order.
 #   hubot order all - show all orders and calculate total money needed.
-#	hubot order reset - reset all orders.
+#	hubot order reset all - reset all orders.
 #
 # Author:
 #   Ghost.Yang
@@ -24,7 +24,7 @@ Util = require 'util'
 module.exports = (robot) ->
 	class Order
 		constructor: (options) -> 
-			{@name, @userId, @date, @food, @note, @money} = options
+			{@name, @userId, @date, @category, @food, @note, @money} = options
 
 		toString: () ->
 			GetReplyMsg @
@@ -48,70 +48,100 @@ module.exports = (robot) ->
 			robot.logger.debug storeInfos
 			Stores.push (new Store name:storeInfos[0], phone:storeInfos[1], link:storeInfos[2])
 
-	robot.brain.data['orders'] = []
+	robot.brain.data['order'] = {}
 
 	robot.respond /order stores/i, (msg) ->
 		msg.reply 'The HUBOT_ORDER_MENU_STORE_INFO environment variable not set' unless Stores.length
 		msg.reply store for store in Stores
 
-	robot.respond /order\s+(\S*)\s+((\S*\s+)+)?\$(\S*)(\s+for\s+@?(\S*))?/i, (msg) ->
+	robot.respond /order\s+(\S*)\s+(\S*)\s+((\S*\s+)+)?\$(\S*)(\s+for\s+@?(\S*))?/i, (msg) ->
 		#robot.logger.debug Util.inspect(msg)
 		date_current = new Date()
-		food = msg.match[1]
-		note = msg.match[2]
-		money = msg.match[4]
+		category = msg.match[1]
+		food = msg.match[2]
+		note = msg.match[3]
+		money = msg.match[5]
 		user = ""
 		userId = ""
-		if (msg.match[6]?)
-			user = msg.match[6]
+		if (msg.match[7]?)
+			user = msg.match[7]
 			userId = parseTarget msg.message.rawText
 		else
 			user = msg.message.user.name
 			userId = msg.message.user.id
 
-		order = new Order name:user, userId:userId, date:date_current, food:food, note:note, money:money
+		order = new Order name:user, userId:userId, date:date_current, category:category, food:food, note:note, money:money
 
-		for _order in robot.brain.data.orders
-			if(_order.name is user)
-				index = robot.brain.data.orders.indexOf(_order)
-				robot.brain.data.orders.splice(index, 1)
-				break
+		if(robot.brain.data.order[category]? != true)
+			robot.brain.data.order[category]={}
 
-		robot.brain.data.orders.push order
+		robot.brain.data.order[category][user] = order
 
 		msg.reply GetReplyMsg order
 
 	robot.respond /order my/i, (msg) ->
-		date_current = new Date()
+		flag = false
 		user = msg.message.user.name
-		order = o for o in robot.brain.data.orders when o.name is user #and o.date.getDate() is date_current.getDate()
-		if (order?)
-			msg.reply order
-		else
+		for categoryName, category of robot.brain.data.order
+			for userName, order of category when userName is user
+				if order?
+					msg.reply order
+					flag = true
+
+		if (flag isnt true)
 			msg.reply "you have no order."
 
 	robot.respond /order all/i, (msg) ->
-		date_current = new Date()
-		orders = robot.brain.data.orders
 		totalMoney = 0
-		if (orders isnt null)
-			totalMoney += parseInt( order.money, 10 ) for order in orders
-			msg.reply order for order in orders #when order.date.getDate is date_current.getDate
-			msg.reply "Total money : #{totalMoney}"
-		else
+		flag = false
+		for categoryName, category of robot.brain.data.order
+			for userName, order of category
+				if order?
+					msg.reply order
+					totalMoney += parseInt( order.money, 10 )
+			if totalMoney isnt 0
+				msg.reply "Total money : #{totalMoney}"
+				totalMoney = 0
+				flag = true
+	
+		if(flag != true)
 			msg.reply "There has no orders."
 
-	robot.respond /order reset/i, (msg) ->
-		robot.brain.data['orders'] = []
-		msg.reply "Orders reset !"
+	robot.respond /order reset all/i, (msg) ->
+		robot.brain.data['order'] = {}
+		msg.reply "you reset all orders !"
+
+	robot.respond /order reset my/i, (msg) ->
+		user = msg.message.user.name
+		for categoryName, category of robot.brain.data.order
+			flag = false
+			for userName, order of category when userName is user
+				flag = true
+			category[user] = null if flag
+
+		if flag
+			msg.reply "you reset your orders !"
+
+	robot.respond /order reset @(\S*)/i, (msg) ->
+		user = msg.match[1]
+		userId = parseTarget msg.message.rawText
+		for categoryName, category of robot.brain.data.order
+			flag = false
+			for userName, order of category when userName is user
+				flag = true
+			category[user] = null if flag
+
+		if flag
+			msg.reply "you reset <@#{userId}|#{user}> orders !"
 
 	parseTarget = (text) ->
-		regexPattern = /order .* for \<@?(\S*)\>/i
+		robot.logger.warning text
+		regexPattern = /order (.* for |reset )\<@?(\S*)\>/i
 		matches = text.match regexPattern
-		matches[1]
+		matches[2]
 
 	GetReplyMsg = (order) ->
 		if(order.note?)
-			"You order #{order.food} #{order.note} $#{order.money} for <@#{order.userId}|#{order.user}>"
+			"Order [#{order.category}] #{order.food} #{order.note} $#{order.money} for <@#{order.userId}|#{order.user}>"
 		else
-			"You order #{order.food} $#{order.money} for <@#{order.userId}|#{order.user}>"
+			"Order [#{order.category}] #{order.food} $#{order.money} for <@#{order.userId}|#{order.user}>"

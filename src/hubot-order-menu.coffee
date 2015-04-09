@@ -2,18 +2,20 @@
 #   Make an order for easyily record and calculate total money needed.
 #
 # Dependencies:
-#   
+#   coffee-script
 #
 # Configuration:
 #	HUBOT_ORDER_MENU_STORE_INFO=[name1,phone1,Http:\\link1;name2,phone2,Http:\\link2]
 #
 # Commands:
 #	hubot order stores - show all store info.
-#   hubot order <food> (<note> )$<money> - make an order.
-#   hubot order <food> (<note> )$<money> for @someone - make an order for someone.
+#   hubot order <category> (<note> )$<money> - make an order.
+#   hubot order <category> (<note> )$<money> for @someone - make an order for someone.
 #   hubot order my - show your order.
 #   hubot order all - show all orders and calculate total money needed.
 #	hubot order reset all - reset all orders.
+#	hubot order reset @someone - reset someone orders.
+#	hubot order reset my - reset your orders.
 #
 # Author:
 #   Ghost.Yang

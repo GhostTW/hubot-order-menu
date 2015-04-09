@@ -79,7 +79,10 @@ module.exports = (robot) ->
 
 		robot.brain.data.orders.push order
 
-		msg.reply "You order #{food} #{note} $#{money} for <@#{userId}|#{user}>"
+		if(note?)
+			msg.reply "You order #{food} #{note} $#{money} for <@#{userId}|#{user}>"
+		else
+			msg.reply "You order #{food} $#{money} for <@#{userId}|#{user}>"
 
 	robot.respond /order my/i, (msg) ->
 		date_current = new Date()

@@ -74,19 +74,18 @@ module.exports = (robot) ->
 			commands.Add store
 		commands.Send()
 
-	robot.respond /order\s+(\S*)\s+(\S*)\s+((\S*\s+)+)?\$(\S*)(\s+for\s+@?(\S*))?/i, (msg) ->
+	robot.respond /order\s+(\S*)\s+(\S*)\s+((?:\S*\s+)+)?\$(\S*)(?:\s+for\s+@?(\S*))?/i, (msg) ->
 		#robot.logger.debug Util.inspect msg
 		commands = new CommandStore msg
-		robot.logger.debug Util.inspect commands.commands
 		date_current = new Date()
 		category = msg.match[1]
 		food = msg.match[2]
 		note = msg.match[3]
-		money = msg.match[5]
+		money = msg.match[4]
 		user = ""
 		userId = ""
-		if (msg.match[7]?)
-			user = msg.match[7]
+		if (msg.match[5]?)
+			user = msg.match[5]
 			userId = parseTarget msg.message.rawText
 		else
 			user = msg.message.user.name
@@ -116,7 +115,7 @@ module.exports = (robot) ->
 			commands.Add "you have no order."
 		commands.Send()
 
-	robot.respond /order category (\S*)/i, (msg) ->
+	robot.respond /order cate(?:g?o?r?y?) (\S*)/i, (msg) ->
 		commands = new CommandStore msg
 		_categoryName = msg.match[1]
 		totalMoney = 0

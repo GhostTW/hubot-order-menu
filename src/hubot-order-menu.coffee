@@ -30,14 +30,14 @@ module.exports = (robot) ->
     constructor: (options) -> 
       {@name, @userId, @date, @category, @food, @note, @money} = options
 
-    toString: () ->
-      GetReplyMsg @
+    toString: ->
+      GetReplyMsg this
 
   class Store
     constructor: (options) -> 
       {@name, @phone, @link} = options
 
-    toString: () ->
+    toString: ->
       "#{@name} #{@phone} - #{@link}"
 
   class CommandStore
@@ -48,7 +48,7 @@ module.exports = (robot) ->
     Add: (message) ->
       @commands.push message
 
-    Send: () ->
+    Send: ->
       message = @commands.join('\n')
       @bot.reply message
 

@@ -1,7 +1,7 @@
 {
   "name": "hubot-order-menu",
   "description": "Make an order for easyily record and calculate total money requirement.",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "author": "Ghost Yang <ghosttw88@hotmail.com>",
   "license": "MIT",
   "keywords": [

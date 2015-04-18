@@ -181,7 +181,7 @@ module.exports = (robot) ->
 		if flag
 			msg.reply "you reset <@#{userId}|#{user}> orders !"
 
-	robot.respond /order reset category (\S*)/i, (msg) ->
+	robot.respond /order reset cate(?:g?o?r?y?) (\S*)/i, (msg) ->
 		_categoryName = msg.match[1]
 		flag = false
 		for categoryName, category of robot.brain.data.order when categoryName is _categoryName

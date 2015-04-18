@@ -13,10 +13,12 @@ Make an order for easyily record and calculate total money needed.
 
 ## Commands:
 1.	hubot order stores - show all store info.
-2.	hubot order <category> (<note> )$<money> - make an order.
-3.	hubot order <category> (<note> )$<money> for @someone - make an order for someone.
+2.	hubot order \<category\> \(\<note\> \)$\<money\> - make an order.
+3.	hubot order \<category\> \(\<note\> \)$\<money\> for @someone - make an order for someone.
 4.	hubot order my - show your order.
-5.	hubot order all - show all orders and calculate total money needed.
-6.	hubot order reset all - reset all orders.
-7.	hubot order reset @someone - reset someone orders.
-8.	hubot order reset my - reset your orders.
+5.  hubot order category \<category\> - show category's orders and calculate total money needed.
+6.	hubot order all - show all orders and calculate total money needed.
+7.	hubot order reset all - reset all orders.
+8.	hubot order reset @someone - reset someone orders.
+9.	hubot order reset my - reset your orders.
+10.	hubot order reset \<category\> - reset category.

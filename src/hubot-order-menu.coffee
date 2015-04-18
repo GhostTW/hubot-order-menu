@@ -43,7 +43,7 @@ module.exports = (robot) ->
 	class CommandStore
 		constructor: (options) -> 
 			@bot = options
-			@commands = []
+			@commands = ['\n']
 
 		Add: (message) ->
 			@commands.push message

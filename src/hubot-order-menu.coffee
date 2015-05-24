@@ -20,6 +20,7 @@
 # hubot order reset @someone - reset someone orders.
 # hubot order reset my - reset your orders.
 # hubot order reset category <category> - clear category.
+# hubot order set discount <category> - setting category's discount.
 #
 # Author:
 #   Ghost.Yang
@@ -53,7 +54,6 @@ module.exports = (robot) ->
     Send: ->
       message = @commands.join('\n')
       @bot.reply message
-
 
   unless process.env.HUBOT_ORDER_MENU_STORE_INFO?
     robot.logger.warning 'The HUBOT_ORDER_MENU_STORE_INFO environment variable not set'
@@ -264,6 +264,10 @@ module.exports = (robot) ->
     for categoryName, category of robot.brain.data.order when categoryName is _categoryName
       msg.reply "you reset category #{_categoryName} !"
       delete robot.brain.data.order[_categoryName]
+
+  robot.respond /order set discount (\S*)/i, (msg) ->
+    discount = msg.match[1]
+    
 
   parseTarget = (text) ->
     robot.logger.warning text

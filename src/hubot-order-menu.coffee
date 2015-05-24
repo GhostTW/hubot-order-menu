@@ -9,8 +9,8 @@
 #
 # Commands:
 # hubot order stores - show all store info.
-# hubot order <category> (<note> )$<money> - make an order.
-# hubot order <category> (<note> )$<money> for @someone - make an order for someone.
+# hubot order <category> (<food> <note> )$<money> - make an order.
+# hubot order <category> (<food> <note> )$<money> for @someone - make an order for someone.
 # hubot order show total - show your order.
 # hubot order show cate(gory) <category> - show someone category's orders and calculate total money needed.
 # hubot order show cate(gory) <category> all - show category's orders and calculate total money needed.
@@ -97,7 +97,10 @@ module.exports = (robot) ->
     if(robot.brain.data.order[category]? != true)
       robot.brain.data.order[category]={}
 
-    robot.brain.data.order[category][user] = order
+    if(robot.brain.data.order[category][user]? != true)
+      robot.brain.data.order[category][user]={}
+
+    robot.brain.data.order[category][user][food] = order
 
     commands.Add GetReplyMsg order
     commands.Send()
@@ -117,12 +120,13 @@ module.exports = (robot) ->
       user = msg.message.user.name
       userId = msg.message.user.id
     for categoryName, category of robot.brain.data.order
-      for userName, order of category when userName is user
-        if order?
-          commands.Add order
-          categoryMoney += parseFloat( order.money )
-          totalMoney += parseFloat( order.money )
-          flag = true
+      for userName, food of category when userName is user
+        for foodName, order of food
+          if order?
+            commands.Add order
+            categoryMoney += parseFloat( order.money )
+            totalMoney += parseFloat( order.money )
+            flag = true
       if categoryMoney isnt 0
         commands.Add "#{categoryName} total : #{categoryMoney}"
         categoryMoney = 0
@@ -140,11 +144,12 @@ module.exports = (robot) ->
     totalMoney = 0
     flag = false
     for categoryName, category of robot.brain.data.order when categoryName is _categoryName
-      for userName, order of category
-        if order?
-          commands.Add order
-          totalMoney += parseFloat( order.money )
-          flag = true
+      for userName, food of category
+        for foodName, order of food
+          if order?
+            commands.Add order
+            totalMoney += parseFloat( order.money )
+            flag = true
       if totalMoney isnt 0
         commands.Add "#{categoryName} total : #{totalMoney}"
         totalMoney = 0
@@ -161,11 +166,12 @@ module.exports = (robot) ->
     flag = false
     user = msg.message.user.name
     for categoryName, category of robot.brain.data.order when categoryName is _categoryName
-      for userName, order of category when userName is user
-        if order?
-          commands.Add order
-          totalMoney += parseFloat( order.money )
-          flag = true
+      for userName, food of category when userName is user
+        for foodName, order of food
+          if order?
+            commands.Add order
+            totalMoney += parseFloat( order.money )
+            flag = true
       if totalMoney isnt 0
         commands.Add "#{categoryName} total : #{totalMoney}"
         totalMoney = 0
@@ -181,11 +187,12 @@ module.exports = (robot) ->
     totalMoney = 0
     flag = false
     for categoryName, category of robot.brain.data.order
-      for userName, order of category
-        if order?
-          commands.Add order
-          categoryMoney += parseFloat( order.money )
-          totalMoney += parseFloat( order.money )
+      for userName, food of category
+        for foodName, order of food
+          if order?
+            commands.Add order
+            categoryMoney += parseFloat( order.money )
+            totalMoney += parseFloat( order.money )
       if categoryMoney isnt 0
         commands.Add "#{categoryName} total : #{categoryMoney}"
         categoryMoney = 0
@@ -205,7 +212,7 @@ module.exports = (robot) ->
     user = msg.message.user.name
     for categoryName, category of robot.brain.data.order
       flag = false
-      for userName, order of category when userName is user
+      for userName, food of category when userName is user
         flag = true
       delete category[user] if flag
 
@@ -217,7 +224,7 @@ module.exports = (robot) ->
     userId = parseTarget msg.message.rawText
     for categoryName, category of robot.brain.data.order
       flag = false
-      for userName, order of category when userName is user
+      for userName, food of category when userName is user
         flag = true
       delete category[user] if flag
 

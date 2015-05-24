@@ -11,7 +11,7 @@
 # hubot order stores - show all store info.
 #   hubot order <category> (<note> )$<money> - make an order.
 #   hubot order <category> (<note> )$<money> for @someone - make an order for someone.
-#   hubot order my - show your order.
+#   hubot order total - show your order.
 #   hubot order category <category> - show category's orders and calculate total money needed.
 #   hubot order all - show all orders and calculate total money needed.
 # hubot order reset all - reset all orders.
@@ -103,16 +103,26 @@ module.exports = (robot) ->
 
   robot.respond /order my/i, (msg) ->
     commands = new CommandStore msg
+    categoryMoney = 0
+    totalMoney = 0
     flag = false
     user = msg.message.user.name
     for categoryName, category of robot.brain.data.order
       for userName, order of category when userName is user
         if order?
           commands.Add order
+          categoryMoney += parseInt( order.money, 10 )
+          totalMoney += parseInt( order.money, 10 )
           flag = true
+      if categoryMoney isnt 0
+        commands.Add "Category ${categoryName} total : #{categoryMoney}"
+        categoryMoney = 0
+        flag = true
 
     if (flag isnt true)
       commands.Add "you have no order."
+    else
+      commands.Add "Total money : #{totalMoney}"
     commands.Send()
 
   robot.respond /order cate(?:g?o?r?y?) (\S*)/i, (msg) ->
@@ -128,7 +138,7 @@ module.exports = (robot) ->
           totalMoney += parseInt( order.money, 10 )
           flag = true
       if totalMoney isnt 0
-        commands.Add "Total money : #{totalMoney}"
+        commands.Add "Category ${categoryName} total : #{totalMoney}"
         totalMoney = 0
         flag = true
 
@@ -146,7 +156,7 @@ module.exports = (robot) ->
           commands.Add order
           totalMoney += parseInt( order.money, 10 )
       if totalMoney isnt 0
-        commands.Add "Total money : #{totalMoney}"
+        commands.Add "Category ${categoryName} total : #{totalMoney}"
         totalMoney = 0
         flag = true
   

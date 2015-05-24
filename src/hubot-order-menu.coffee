@@ -101,12 +101,20 @@ module.exports = (robot) ->
     commands.Add GetReplyMsg order
     commands.Send()
 
-  robot.respond /order my/i, (msg) ->
+  robot.respond /order total(?:(?:\s+for)?\s+@?(\S*))?/i, (msg) ->
+    robot.logger.debug Util.inspect msg
     commands = new CommandStore msg
     categoryMoney = 0
     totalMoney = 0
     flag = false
-    user = msg.message.user.name
+    user = ""
+    userId = ""
+    if (msg.match[1]?)
+      user = msg.match[1]
+      userId = parseTarget msg.message.rawText
+    else
+      user = msg.message.user.name
+      userId = msg.message.user.id
     for categoryName, category of robot.brain.data.order
       for userName, order of category when userName is user
         if order?
@@ -115,7 +123,7 @@ module.exports = (robot) ->
           totalMoney += parseInt( order.money, 10 )
           flag = true
       if categoryMoney isnt 0
-        commands.Add "Category ${categoryName} total : #{categoryMoney}"
+        commands.Add "Category #{categoryName} total : #{categoryMoney}"
         categoryMoney = 0
         flag = true
 
@@ -138,7 +146,7 @@ module.exports = (robot) ->
           totalMoney += parseInt( order.money, 10 )
           flag = true
       if totalMoney isnt 0
-        commands.Add "Category ${categoryName} total : #{totalMoney}"
+        commands.Add "Category #{categoryName} total : #{totalMoney}"
         totalMoney = 0
         flag = true
 
@@ -148,20 +156,24 @@ module.exports = (robot) ->
 
   robot.respond /order all/i, (msg) ->
     commands = new CommandStore msg
+    categoryMoney = 0
     totalMoney = 0
     flag = false
     for categoryName, category of robot.brain.data.order
       for userName, order of category
         if order?
           commands.Add order
+          categoryMoney += parseInt( order.money, 10 )
           totalMoney += parseInt( order.money, 10 )
-      if totalMoney isnt 0
-        commands.Add "Category ${categoryName} total : #{totalMoney}"
-        totalMoney = 0
+      if categoryMoney isnt 0
+        commands.Add "Category #{categoryName} total : #{categoryMoney}"
+        categoryMoney = 0
         flag = true
   
     if(flag != true)
       commands.Add "There has no orders."
+    else
+      commands.Add "Total : #{totalMoney}"
     commands.Send()
 
   robot.respond /order reset all/i, (msg) ->

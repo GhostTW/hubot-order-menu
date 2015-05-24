@@ -119,8 +119,8 @@ module.exports = (robot) ->
       for userName, order of category when userName is user
         if order?
           commands.Add order
-          categoryMoney += parseInt( order.money, 10 )
-          totalMoney += parseInt( order.money, 10 )
+          categoryMoney += parseFloat( order.money )
+          totalMoney += parseFloat( order.money )
           flag = true
       if categoryMoney isnt 0
         commands.Add "Category #{categoryName} total : #{categoryMoney}"
@@ -143,7 +143,7 @@ module.exports = (robot) ->
       for userName, order of category when userName is user
         if order?
           commands.Add order
-          totalMoney += parseInt( order.money, 10 )
+          totalMoney += parseFloat( order.money )
           flag = true
       if totalMoney isnt 0
         commands.Add "Category #{categoryName} total : #{totalMoney}"
@@ -163,8 +163,8 @@ module.exports = (robot) ->
       for userName, order of category
         if order?
           commands.Add order
-          categoryMoney += parseInt( order.money, 10 )
-          totalMoney += parseInt( order.money, 10 )
+          categoryMoney += parseFloat( order.money )
+          totalMoney += parseFloat( order.money )
       if categoryMoney isnt 0
         commands.Add "Category #{categoryName} total : #{categoryMoney}"
         categoryMoney = 0

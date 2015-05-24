@@ -9,11 +9,12 @@
 #
 # Commands:
 # hubot order stores - show all store info.
-#   hubot order <category> (<note> )$<money> - make an order.
-#   hubot order <category> (<note> )$<money> for @someone - make an order for someone.
-#   hubot order total - show your order.
-#   hubot order category <category> - show category's orders and calculate total money needed.
-#   hubot order all - show all orders and calculate total money needed.
+# hubot order <category> (<note> )$<money> - make an order.
+# hubot order <category> (<note> )$<money> for @someone - make an order for someone.
+# hubot order show total - show your order.
+# hubot order show cate(gory) <category> - show someone category's orders and calculate total money needed.
+# hubot order show cate(gory) <category> all - show category's orders and calculate total money needed.
+# hubot order show all - show all orders and calculate total money needed.
 # hubot order reset all - reset all orders.
 # hubot order reset @someone - reset someone orders.
 # hubot order reset my - reset your orders.
@@ -101,7 +102,7 @@ module.exports = (robot) ->
     commands.Add GetReplyMsg order
     commands.Send()
 
-  robot.respond /order total(?:(?:\s+for)?\s+@?(\S*))?/i, (msg) ->
+  robot.respond /order show total(?:(?:\s+for)?\s+@?(\S*))?/i, (msg) ->
     robot.logger.debug Util.inspect msg
     commands = new CommandStore msg
     categoryMoney = 0
@@ -133,7 +134,7 @@ module.exports = (robot) ->
       commands.Add "Total money : #{totalMoney}"
     commands.Send()
 
-  robot.respond /order cate(?:g?o?r?y?) (\S*)/i, (msg) ->
+  robot.respond /order show cate(?:g?o?r?y?) (\S*)/i, (msg) ->
     commands = new CommandStore msg
     _categoryName = msg.match[1]
     totalMoney = 0
@@ -154,7 +155,7 @@ module.exports = (robot) ->
       commands.Add "you have no order."
     commands.Send()
 
-  robot.respond /order all/i, (msg) ->
+  robot.respond /order show all/i, (msg) ->
     commands = new CommandStore msg
     categoryMoney = 0
     totalMoney = 0

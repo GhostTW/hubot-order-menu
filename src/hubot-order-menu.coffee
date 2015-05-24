@@ -31,7 +31,12 @@ Util = require 'util'
 module.exports = (robot) ->
   class Order
     constructor: (options) -> 
-      {@name, @userId, @date, @category, @food, @note, @money} = options
+      {@name, @userId, @date, @category, @food, @note, @money, @discountRatio} = options
+      @SetDiscountRatio @discountRatio
+      
+    SetDiscountRatio: (discountRatio) ->
+      @discountRatio = discountRatio
+      @discount = parseFloat( @money ) * parseFloat( @discountRatio )
 
     toString: ->
       GetReplyMsg this
@@ -68,6 +73,8 @@ module.exports = (robot) ->
       Stores.push (new Store name:storeInfos[0], phone:storeInfos[1], link:storeInfos[2])
 
   robot.brain.data['order'] = {}
+  robot.brain.data['setting'] = {}
+  robot.brain.data.setting['discountRatio'] = {}
 
   robot.respond /order stores/i, (msg) ->
     msg.reply 'The HUBOT_ORDER_MENU_STORE_INFO environment variable not set' unless Stores.length
@@ -93,7 +100,12 @@ module.exports = (robot) ->
       user = msg.message.user.name
       userId = msg.message.user.id
 
-    order = new Order name:user, userId:userId, date:date_current, category:category, food:food, note:note, money:money
+    if(robot.brain.data.setting.discountRatio[category]? != true)
+      robot.brain.data.setting.discountRatio[category] = 1
+
+    discountRatio = robot.brain.data.setting.discountRatio[category]
+
+    order = new Order name:user, userId:userId, date:date_current, category:category, food:food, note:note, money:money, discountRatio:discountRatio
 
     if(robot.brain.data.order[category]? != true)
       robot.brain.data.order[category]={}
@@ -151,8 +163,8 @@ module.exports = (robot) ->
         for foodName, order of food
           if order?
             commands.Add order
-            categoryMoney += parseFloat( order.money )
-            totalMoney += parseFloat( order.money )
+            categoryMoney += parseFloat( order.discount )
+            totalMoney += parseFloat( order.discount )
             flag = true
       if categoryMoney isnt 0
         commands.Add "#{categoryName} total : #{categoryMoney}"
@@ -175,7 +187,7 @@ module.exports = (robot) ->
         for foodName, order of food
           if order?
             commands.Add order
-            totalMoney += parseFloat( order.money )
+            totalMoney += parseFloat( order.discount )
             flag = true
       if totalMoney isnt 0
         commands.Add "#{categoryName} total : #{totalMoney}"
@@ -197,7 +209,35 @@ module.exports = (robot) ->
         for foodName, order of food
           if order?
             commands.Add order
-            totalMoney += parseFloat( order.money )
+            totalMoney += parseFloat( order.discount )
+            flag = true
+      if totalMoney isnt 0
+        commands.Add "#{categoryName} total : #{totalMoney}"
+        totalMoney = 0
+        flag = true
+
+    if (flag isnt true)
+      commands.Add "you have no order."
+    commands.Send()
+
+  robot.respond /order show cate(?:g?o?r?y?) (\S*)(?:(?:\s+for)?\s+@?(\S*))?$/i, (msg) ->
+    commands = new CommandStore msg
+    _categoryName = msg.match[1]
+    totalMoney = 0
+    flag = false
+    user = ""
+    if (msg.match[2]?)
+      user = msg.match[2]
+    else
+      user = msg.message.user.name
+    robot.logger.debug user
+    robot.logger.debug Util.inspect robot.brain.data.order
+    for categoryName, category of robot.brain.data.order when categoryName is _categoryName
+      for userName, food of category when userName is user
+        for foodName, order of food
+          if order?
+            commands.Add order
+            totalMoney += parseFloat( order.discount )
             flag = true
       if totalMoney isnt 0
         commands.Add "#{categoryName} total : #{totalMoney}"
@@ -218,8 +258,8 @@ module.exports = (robot) ->
         for foodName, order of food
           if order?
             commands.Add order
-            categoryMoney += parseFloat( order.money )
-            totalMoney += parseFloat( order.money )
+            categoryMoney += parseFloat( order.discount )
+            totalMoney += parseFloat( order.discount )
       if categoryMoney isnt 0
         commands.Add "#{categoryName} total : #{categoryMoney}"
         categoryMoney = 0
@@ -265,9 +305,18 @@ module.exports = (robot) ->
       msg.reply "you reset category #{_categoryName} !"
       delete robot.brain.data.order[_categoryName]
 
-  robot.respond /order set discount (\S*)/i, (msg) ->
-    discount = msg.match[1]
-    
+  robot.respond /order\s+set\s+disc(?:o?u?n?t?)\s+(\S*)\s+(\S*)/i, (msg) ->    
+    categoryName = msg.match[1]
+    discountRatio = msg.match[2]
+
+    robot.brain.data.setting.discountRatio[categoryName] = parseFloat(discountRatio)
+
+    if(robot.brain.data.order[categoryName]?)      
+      for userName, food of robot.brain.data.order[categoryName]
+        for foodName, order of food
+          order.SetDiscountRatio discountRatio
+
+    msg.reply "Set #{categoryName} discount ratio : #{discountRatio}"
 
   parseTarget = (text) ->
     robot.logger.warning text
@@ -277,6 +326,6 @@ module.exports = (robot) ->
 
   GetReplyMsg = (order) ->
     if(order.note?)
-      "Order #{order.category} #{order.food} #{order.note} $#{order.money} for <@#{order.userId}|#{order.user}>"
+      "Order #{order.category} #{order.food} #{order.note} $#{order.money} * #{order.discountRatio} = $#{order.discount} for <@#{order.userId}|#{order.user}>"
     else
-      "Order #{order.category} #{order.food} $#{order.money} for <@#{order.userId}|#{order.user}>"
+      "Order #{order.category} #{order.food} $#{order.money} * #{order.discountRatio} = $#{order.discount} for <@#{order.userId}|#{order.user}>"

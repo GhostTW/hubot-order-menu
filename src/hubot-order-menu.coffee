@@ -123,7 +123,7 @@ module.exports = (robot) ->
           totalMoney += parseFloat( order.money )
           flag = true
       if categoryMoney isnt 0
-        commands.Add "Category #{categoryName} total : #{categoryMoney}"
+        commands.Add "#{categoryName} total : #{categoryMoney}"
         categoryMoney = 0
         flag = true
 
@@ -146,7 +146,7 @@ module.exports = (robot) ->
           totalMoney += parseFloat( order.money )
           flag = true
       if totalMoney isnt 0
-        commands.Add "Category #{categoryName} total : #{totalMoney}"
+        commands.Add "#{categoryName} total : #{totalMoney}"
         totalMoney = 0
         flag = true
 
@@ -166,7 +166,7 @@ module.exports = (robot) ->
           categoryMoney += parseFloat( order.money )
           totalMoney += parseFloat( order.money )
       if categoryMoney isnt 0
-        commands.Add "Category #{categoryName} total : #{categoryMoney}"
+        commands.Add "#{categoryName} total : #{categoryMoney}"
         categoryMoney = 0
         flag = true
   

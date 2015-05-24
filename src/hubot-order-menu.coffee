@@ -103,7 +103,7 @@ module.exports = (robot) ->
     commands.Send()
 
   robot.respond /order show total(?:(?:\s+for)?\s+@?(\S*))?/i, (msg) ->
-    robot.logger.debug Util.inspect msg
+    #robot.logger.debug Util.inspect msg
     commands = new CommandStore msg
     categoryMoney = 0
     totalMoney = 0
@@ -134,7 +134,27 @@ module.exports = (robot) ->
       commands.Add "Total money : #{totalMoney}"
     commands.Send()
 
-  robot.respond /order show cate(?:g?o?r?y?) (\S*)/i, (msg) ->
+  robot.respond /order show cate(?:g?o?r?y?) (\S*) all/i, (msg) ->
+    commands = new CommandStore msg
+    _categoryName = msg.match[1]
+    totalMoney = 0
+    flag = false
+    for categoryName, category of robot.brain.data.order when categoryName is _categoryName
+      for userName, order of category
+        if order?
+          commands.Add order
+          totalMoney += parseFloat( order.money )
+          flag = true
+      if totalMoney isnt 0
+        commands.Add "#{categoryName} total : #{totalMoney}"
+        totalMoney = 0
+        flag = true
+
+    if (flag isnt true)
+      commands.Add "you have no order."
+    commands.Send()
+
+  robot.respond /order show cate(?:g?o?r?y?) (\S*)(?:\s*)$/i, (msg) ->
     commands = new CommandStore msg
     _categoryName = msg.match[1]
     totalMoney = 0

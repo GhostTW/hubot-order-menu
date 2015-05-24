@@ -9,13 +9,13 @@
 #
 # Commands:
 # hubot order stores - show all store info.
-# hubot order <category> (<food> <note> )$<money> - make an order.
-# hubot order <category> (<food> <note> )$<money> for @someone - make an order for someone.
-# hubot order <category> del <food> - delete food record
-# hubot order show total - show your order.
-# hubot order show cate(gory) <category> - show someone category's orders and calculate total money needed.
+# hubot order <category> (<food> <note> )$<money>( for @someone ) - make an order.
+# hubot order <category> del <food>( for @someone ) - delete food record
+# hubot order show total( for @someone ) - show your order.
+# hubot order show cate(gory) <category>( for @someone ) - show someone category's orders and calculate total money needed.
 # hubot order show cate(gory) <category> all - show category's orders and calculate total money needed.
 # hubot order show all - show all orders and calculate total money needed.
+# hubot order show all sort by item - show all order sorted by item name.
 # hubot order reset all - reset all orders.
 # hubot order reset @someone - reset someone orders.
 # hubot order reset my - reset your orders.
@@ -144,7 +144,7 @@ module.exports = (robot) ->
     commands.Add "You delete #{orderMsg}"
     commands.Send()
 
-  robot.respond /order show total(?:(?:\s+for)?\s+@?(\S*))?/i, (msg) ->
+  robot.respond /order show total(?:\s+for\s+@?(\S*))?/i, (msg) ->
     #robot.logger.debug Util.inspect msg
     commands = new CommandStore msg
     categoryMoney = 0
@@ -198,29 +198,7 @@ module.exports = (robot) ->
       commands.Add "you have no order."
     commands.Send()
 
-  robot.respond /order show cate(?:g?o?r?y?) (\S*)(?:\s*)$/i, (msg) ->
-    commands = new CommandStore msg
-    _categoryName = msg.match[1]
-    totalMoney = 0
-    flag = false
-    user = msg.message.user.name
-    for categoryName, category of robot.brain.data.order when categoryName is _categoryName
-      for userName, food of category when userName is user
-        for foodName, order of food
-          if order?
-            commands.Add order
-            totalMoney += parseFloat( order.discount )
-            flag = true
-      if totalMoney isnt 0
-        commands.Add "#{categoryName} total : #{totalMoney}"
-        totalMoney = 0
-        flag = true
-
-    if (flag isnt true)
-      commands.Add "you have no order."
-    commands.Send()
-
-  robot.respond /order show cate(?:g?o?r?y?) (\S*)(?:(?:\s+for)?\s+@?(\S*))?$/i, (msg) ->
+  robot.respond /order show cate(?:g?o?r?y?) (\S*)(?:\s+for\s+@?(\S*))?$/i, (msg) ->
     commands = new CommandStore msg
     _categoryName = msg.match[1]
     totalMoney = 0
@@ -230,8 +208,7 @@ module.exports = (robot) ->
       user = msg.match[2]
     else
       user = msg.message.user.name
-    robot.logger.debug user
-    robot.logger.debug Util.inspect robot.brain.data.order
+
     for categoryName, category of robot.brain.data.order when categoryName is _categoryName
       for userName, food of category when userName is user
         for foodName, order of food
@@ -248,8 +225,9 @@ module.exports = (robot) ->
       commands.Add "you have no order."
     commands.Send()
 
-  robot.respond /order show all/i, (msg) ->
+  robot.respond /order show all(?:\s*)$/i, (msg) ->
     commands = new CommandStore msg
+    userMoney = 0
     categoryMoney = 0
     totalMoney = 0
     flag = false
@@ -258,8 +236,12 @@ module.exports = (robot) ->
         for foodName, order of food
           if order?
             commands.Add order
+            userMoney += parseFloat( order.discount )
             categoryMoney += parseFloat( order.discount )
             totalMoney += parseFloat( order.discount )
+        if Object.keys(category).length > 1
+          commands.Add "#{userName} total : #{userMoney}"
+          userMoney = 0
       if categoryMoney isnt 0
         commands.Add "#{categoryName} total : #{categoryMoney}"
         categoryMoney = 0
@@ -270,6 +252,22 @@ module.exports = (robot) ->
     else
       commands.Add "Total : #{totalMoney}"
     commands.Send()
+
+  robot.respond /order show all sort by item/i, (msg) ->
+    commands = new CommandStore msg
+    categoryMoney = 0
+    totalMoney = 0
+    flag = false
+
+    sorted = SortByItemName robot.brain.data.order
+    for categoryName, category of sorted
+      for foodName, user of category
+        for userName, order of user
+          if order?
+            commands.Add order
+            categoryMoney += parseFloat( order.discount )
+            totalMoney += parseFloat( order.discount )
+    commands.Send() 
 
   robot.respond /order reset all/i, (msg) ->
     robot.brain.data['order'] = {}
@@ -318,6 +316,19 @@ module.exports = (robot) ->
 
     msg.reply "Set #{categoryName} discount ratio : #{discountRatio}"
 
+  SortByItemName = (records) ->
+    sorted = {}
+    for categoryName, category of robot.brain.data.order
+      if(sorted[categoryName]? != true)
+        sorted[categoryName] = {}
+      for userName, food of category
+        for foodName, order of food
+          if order?
+            if(sorted[categoryName][foodName]? != true)
+              sorted[categoryName][foodName] = {}
+            sorted[categoryName][foodName][userName] = order
+    return sorted        
+
   parseTarget = (text) ->
     robot.logger.warning text
     regexPattern = /order (.* for |reset )\<@?(\S*)\>/i
@@ -325,7 +336,13 @@ module.exports = (robot) ->
     matches[2]
 
   GetReplyMsg = (order) ->
-    if(order.note?)
-      "Order #{order.category} #{order.food} #{order.note} $#{order.money} * #{order.discountRatio} = $#{order.discount} for <@#{order.userId}|#{order.user}>"
+    if order.discountRatio != 1
+      if(order.note?)
+        "Order #{order.category} #{order.food} #{order.note} $#{order.money} * #{order.discountRatio} = $#{order.discount} for <@#{order.userId}|#{order.user}>"
+      else
+        "Order #{order.category} #{order.food} $#{order.money} * #{order.discountRatio} = $#{order.discount} for <@#{order.userId}|#{order.user}>"
     else
-      "Order #{order.category} #{order.food} $#{order.money} * #{order.discountRatio} = $#{order.discount} for <@#{order.userId}|#{order.user}>"
+      if(order.note?)
+        "Order #{order.category} #{order.food} #{order.note} $#{order.money} for <@#{order.userId}|#{order.user}>"
+      else
+        "Order #{order.category} #{order.food} $#{order.money} for <@#{order.userId}|#{order.user}>"

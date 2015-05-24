@@ -11,6 +11,7 @@
 # hubot order stores - show all store info.
 # hubot order <category> (<food> <note> )$<money> - make an order.
 # hubot order <category> (<food> <note> )$<money> for @someone - make an order for someone.
+# hubot order <category> del <food> - delete food record
 # hubot order show total - show your order.
 # hubot order show cate(gory) <category> - show someone category's orders and calculate total money needed.
 # hubot order show cate(gory) <category> all - show category's orders and calculate total money needed.
@@ -103,6 +104,32 @@ module.exports = (robot) ->
     robot.brain.data.order[category][user][food] = order
 
     commands.Add GetReplyMsg order
+    commands.Send()
+
+  robot.respond /order\s+(\S*)\s+del\s+(\S*)(?:\s+for\s+@?(\S*))?/i, (msg) ->
+    commands = new CommandStore msg
+    category = msg.match[1]
+    food = msg.match[2]
+    user = ""
+    userId = ""
+    if (msg.match[3]?)
+      user = msg.match[3]
+      userId = parseTarget msg.message.rawText
+    else
+      user = msg.message.user.name
+      userId = msg.message.user.id
+
+    if(robot.brain.data.order[category]? != true)
+      return
+
+    if(robot.brain.data.order[category][user]? != true)
+      return
+
+    orderMsg = GetReplyMsg robot.brain.data.order[category][user][food]
+
+    delete robot.brain.data.order[category][user][food]
+
+    commands.Add "You delete #{orderMsg}"
     commands.Send()
 
   robot.respond /order show total(?:(?:\s+for)?\s+@?(\S*))?/i, (msg) ->

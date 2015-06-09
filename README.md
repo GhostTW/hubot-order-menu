@@ -2,6 +2,8 @@
 
 Make an order for easyily record and calculate total money requirement.
 
+[![Stack Share](http://img.shields.io/badge/tech-stack-0690fa.svg?style=flat)](http://stackshare.io/GhostTW/ghost-hubot-order-food)
+
 ## Usage
 `npm install hubot-order-menu`
 
